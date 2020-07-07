@@ -34,7 +34,30 @@ def picfile_to_face_list(token, picfile):
 def face_to_display_txt(face):
     """给一个face的json信息，输出前端要显示的文字
     """
-    pass
+    if face['expression']['type']=='none':
+        expression = '无'
+    elif face['expression']['type']=='smile':
+        expression = '微笑'
+    else:
+        expression = '大笑'
+
+    if face['gender']['type']=='male':
+        gender = '男'
+    else:
+        gender = '女'
+
+    if face['glasses']['type']=='none':
+        glasses = '没有戴眼镜'
+    elif face['glasses']['type']=='common':
+        glasses = '戴了普通眼镜'
+    else:
+        glasses = '戴了墨镜'
+
+
+    display_txt = {'age':int(face['age']),'beauty':float(face['beauty']),'expression':expression,'gender':gender,'glasses':glasses}
+
+    #返回的字典
+    return display_txt
 
 def _face_to_audio_txt(face):
     """给一个face的json信息，输出处理后要说的文本
@@ -54,8 +77,27 @@ def _face_to_audio_txt(face):
             }
 
     """
-    # TODO 待实现
-    return '阿巴阿巴'
+     if face['expression']['type'] == 'none':
+        expression = '无'
+    elif face['expression']['type'] == 'smile':
+        expression = '微笑'
+    else:
+        expression = '大笑'
+
+    if face['gender']['type'] == 'male':
+        gender = '男'
+    else:
+        gender = '女'
+
+    if face['glasses']['type'] == 'none':
+        glasses = '没有戴眼镜'
+    elif face['glasses']['type'] == 'common':
+        glasses = '戴了普通眼镜'
+    else:
+        glasses = '戴了墨镜'
+    audio_txt = {'age': '年龄{}岁，'.format(str(face['age'])), 'beauty': '颜值{}分，'.format(str(face['beauty'])),
+                 'expression': '表情{}，'.format(expression), 'gender': '性别{}，'.format(gender), 'glasses': glasses}
+    return audio_txt
 
 def _save_file(bytes: bytes, suffix):
     """给定文件二进制流和后缀名（不带点），保存文件在statics/files，返回文件名('xxx.mp3')
@@ -82,7 +124,10 @@ def faces_to_audio_files(token, face_list):
     audio_files = list()
     for face in face_list:
         txt = _face_to_audio_txt(face)
-        fileName = _save_file(tts.convert(token, txt, AUE=3), 'mp3')
-        audio_files.append(fileName)
+        audio_item = {}
+        for key in txt:
+            fileName = _save_file(tts.convert(token, txt[key], AUE=3), 'mp3')
+            audio_item[key] = fileName
+        audio_files.append(audio_item)
 
     return audio_files
